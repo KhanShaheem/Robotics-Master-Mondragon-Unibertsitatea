@@ -1,1 +1,0 @@
-The outcome of this project is to Calibrate and reconstruct the pattern
