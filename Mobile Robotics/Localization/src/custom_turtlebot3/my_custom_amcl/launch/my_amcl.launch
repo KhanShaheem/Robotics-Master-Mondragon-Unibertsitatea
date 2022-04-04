@@ -1,0 +1,10 @@
+<launch>
+
+  <node pkg="amcl" type="amcl" name="amcl">
+	  <rosparam file="$(find custom_turtlebot3)/my_custom_amcl/config/amcl_param.yaml" command="load" />
+	</node>
+	
+	<!-- Distribute pose array across free space -->
+	<node pkg="rosservice" type="rosservice" name="global_loc" args="call --wait /global_localization"/>
+
+</launch>
