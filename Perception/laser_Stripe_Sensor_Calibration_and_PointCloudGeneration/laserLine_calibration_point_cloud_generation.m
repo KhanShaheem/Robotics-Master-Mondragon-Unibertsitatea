@@ -38,8 +38,8 @@ for rot = 1:360
     %% Line Fitting
 
     % Manual Limits
-    xLimits = [639, 568, 562, 544, 534, 515, 509, 488, 483,  465,  459, 329, 328]; % 329, 328];
-    yLimits = [389, 453, 536, 555, 737, 760, 930, 954, 1113, 1136, 1284, 1459, 1491]; % 1462, 1491];
+    xLimits = [639, 568, 562, 544, 534, 515, 509, 488, 483,  465,  459, 329, 328];
+    yLimits = [389, 453, 536, 555, 737, 760, 930, 954, 1113, 1136, 1284, 1459, 1491];
 
     %figure; imshow(imRot); hold on;
 
@@ -133,23 +133,13 @@ for rot = 1:360
     Rx = [1,          0,              0; ...
        0,        cosd(rot),    sind(rot); ...
        0,     sind(rot),       cosd(rot)];
-   
-    %Ry = [cosd(rot),          0,              sind(rot); ...
-     %       0,                1,                0; ...
-      %  -sind(rot),           0,             cosd(rot)];
-   
-    % Generate profile (x = 0, y, z)
     
     CloudPts_Tot = Rx * CloudPts_mm;
     
     Cloud = [Cloud, CloudPts_Tot];
     
     % Write cloud point
-    %writeCloud('PointCloud_x.txt', ptCloud);
     writeCloud('PointCloud.txt', Cloud);
-    
-    %ptCloud = pointCloud(CloudPtsTot, 'Location');
-    %pcshow(ptCloud);
 
 end
 

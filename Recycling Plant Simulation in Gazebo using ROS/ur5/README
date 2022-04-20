@@ -1,0 +1,19 @@
+roslaunch my_ur_gazebo ur5.launch
+
+roslaunch my_ur5_moveit_config ur5_moveit_planning_execution.launch
+
+roslaunch web_tool web_server.launch
+
+roslaunch web_tool ros_bridge.launch
+
+roslaunch moveit_python_interface pick_and_place.launch
+
+_________________________________________________________________________________________________________________________________________________
+
+rostopic echo /device/screen_orientation
+
+rostopic echo /send_image
+
+rostopic echo /image_processing/info
+
+

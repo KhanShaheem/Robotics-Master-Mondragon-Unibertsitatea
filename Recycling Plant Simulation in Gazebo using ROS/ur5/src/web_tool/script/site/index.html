@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+ 
+    <title>ROS</title>
+ 
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-icons.css">
+ 
+    <style>
+        html, body{
+            margin: 0;
+            height: 100%;
+        }
+    
+        #status-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+        }
+        
+        #image-viewer {
+            width: 100%; 
+            height: 100%;
+        }
+        
+        #image {
+            display: block;
+            padding: 0;
+            margin: 0;
+            width: 100%; 
+            height: 100%;
+            object-fit: cover;
+            /* object-fit: fill; */
+            /* transform: rotate(20deg); */
+        }
+
+        .z999 {
+            z-index: 999;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- status -->
+    <div id="status-indicator">
+        <pre class="text-secondary" id="connecting">connecting to rosbridge (<span id="output-host"></span>)</pre>
+        <pre class="text-success" id="connected" style="display:none">connected</pre>
+        <pre class="text-danger" id="error" style="display:none">backend error</pre>
+        <pre class="text-secondary" id="closed" style="display:none">connection closed</pre>
+        <div class="text-primary">
+            <pre id="output-sensor"></pre>
+        </div>
+        <div class="text-secondary">
+            <pre id="output-rotation"></pre>
+        </div>
+        <div class="text-secondary">
+            <pre id="output-position"></pre>
+        </div>
+    </div>
+
+    <!-- images -->
+    <div id="image-viewer">
+        <img id="image"/>
+    </div>
+
+    <!-- controls -->
+    <div class="z999 position-absolute bottom-0 end-0 mb-2 me-2">
+        <button type="button" class="btn btn-outline-secondary d-block" onclick="toggleFullScreen();">
+            <div class="icon">
+                <i class="bi bi-fullscreen"></i>
+            </div>
+        </button>
+    </div>
+    
+    
+    <script src="js/bootstrap.min.js"></script>    
+    <script src="js/eventemitter2.min.js"></script>
+    <script src="js/roslib.min.js"></script>
+
+    
+    <!-- VARIABLES -->
+    <script>
+        var ros = new ROSLIB.Ros();
+        var websocketUrl = undefined;
+        var dataHeader = "data:image/jpg;base64,";
+
+        var subCamera;
+        var pubRotation;
+        var pubAcceleration;
+        var pubScreenOrientation;
+
+        var msgRotation;
+        var msgAcceleration;
+        var msgScreenOrientation;
+    </script>
+
+    <!-- UI -->
+    <script>
+        var output_host = document.querySelector('#output-host');
+        var output_rotation = document.querySelector('#output-rotation');
+        var output_position = document.querySelector('#output-position');
+
+        var image = document.getElementById("image");
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+            } 
+            else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+    </script>
+
+    <!-- ROS -->
+    <script>
+        // event: error on the backend
+        ros.on('error', function (error) {
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('error').style.display = 'inline';
+            console.log(error);
+        });
+
+        // event; connection
+        ros.on('connection', function () {
+            console.log('Connection made!');
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('closed').style.display = 'none';
+            document.getElementById('connected').style.display = 'inline';
+        });
+
+        // event: close
+        ros.on('close', function () {
+            console.log('Connection closed.');
+            document.getElementById('connecting').style.display = 'none';
+            document.getElementById('connected').style.display = 'none';
+            document.getElementById('closed').style.display = 'inline';
+        });
+
+        // topics
+        function createTopics(){
+            subCamera = new ROSLIB.Topic({ros: ros, name: "/camera/image", messageType: 'sensor_msgs/CompressedImage'});
+            subCamera.subscribe(function(message){
+                image.src = dataHeader + message.data;
+            });
+
+            pubRotation = new ROSLIB.Topic({ros: ros, name: "/device/rotation", messageType: 'geometry_msgs/Vector3'});
+            pubAcceleration = new ROSLIB.Topic({ros: ros, name: "/device/acceleration", messageType: 'geometry_msgs/Vector3'});
+            pubScreenOrientation = new ROSLIB.Topic({ros: ros, name: "/device/screen_orientation", messageType: 'std_msgs/Int32'});
+
+            msgRotation = new ROSLIB.Message({x: 0, y: 0, z: 0});
+            msgAcceleration = new ROSLIB.Message({x: 0, y: 0, z: 0});
+            msgScreenOrientation = new ROSLIB.Message({data: 0});
+        }
+
+        // services
+        function createServices(){
+        }
+    </script>
+
+    <!-- DEVICE SENSOR -->
+    <script>
+        var screenOrientation = 0;
+
+        function getScreenOrientation(){
+            var orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
+            if (orientation)
+                switch (orientation){
+                    case 'landscape-primary':
+                        return 90;
+                    case 'landscape-secondary':
+                        return -90;
+                    case 'portrait-secondary':
+                        return 180;
+                    case 'portrait-primary':
+                        return 0;
+                }
+            return window.orientation || 0;
+        }
+
+        function handleMotion(event) {
+            output_position.textContent = `acceleration.x: ${event.acceleration.x}m/s^2\nacceleration.y: ${event.acceleration.y}m/s^2\nacceleration.z: ${event.acceleration.z}m/s^2`;
+
+            msgAcceleration.x = event.acceleration.x;
+            msgAcceleration.y = event.acceleration.y;
+            msgAcceleration.z = event.acceleration.z;
+            pubAcceleration.publish(msgAcceleration);
+        }
+
+        function handleOrientation(event) {            
+            screenOrientation = getScreenOrientation();
+            output_rotation.textContent = `alpha: ${event.alpha}º\nbeta: ${event.beta}º\ngamma: ${event.gamma}º\nscreen orientation: ${screenOrientation}º`;
+            
+            msgRotation.x = event.alpha;
+            msgRotation.y = event.beta;
+            msgRotation.z = event.gamma;
+            pubRotation.publish(msgRotation);
+
+            msgScreenOrientation.data = screenOrientation
+            pubScreenOrientation.publish(msgScreenOrientation);
+        }
+    </script>
+
+    <!-- INIT -->
+    <script>
+        window.onload = function() {
+            image.src = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAIAAAACDbGyAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAAEnQAABJ0Ad5mH3gAAAANSURBVBhXY6AqYGAAAABQAAHTR4hjAAAAAElFTkSuQmCC";
+            websocketUrl = "wss://" + window.location.hostname + ":55001";
+            output_host.textContent = websocketUrl;
+            ros.connect(websocketUrl);
+            
+            createTopics();
+            createServices();
+            
+            window.addEventListener('deviceorientation', handleOrientation);
+            window.addEventListener('devicemotion', handleMotion);
+        };
+    </script>
+</body>
+
+</html>

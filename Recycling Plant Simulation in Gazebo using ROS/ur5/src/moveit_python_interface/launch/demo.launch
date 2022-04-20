@@ -1,0 +1,5 @@
+<launch>
+    <node name="demo" pkg="moveit_python_interface" type="robot_traject.py" output="screen" cwd="node">
+    </node>
+</launch>
+

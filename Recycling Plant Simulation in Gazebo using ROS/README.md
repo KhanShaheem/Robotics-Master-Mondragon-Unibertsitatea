@@ -12,3 +12,5 @@ The courses include:
 5. Robotics: Mechanics, Modelling and Simulation
 6. Sensors and Measurements
 
+Download the ur5 folder to home directory
+Use catkin_make to build the directory

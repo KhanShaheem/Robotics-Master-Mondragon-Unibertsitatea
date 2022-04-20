@@ -1,0 +1,5 @@
+<launch>
+    <node name="capture_images" pkg="moveit_python_interface" type="capture_images.py" output="screen" cwd="node">
+    </node>
+</launch>
+

@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<launch>
+    <!-- Thes are ghe arguments you can pass this launch file, for example paused:=true-->
+    <arg name="paused" default="false"/>
+    <arg name="use_sim_time" default="true"/>
+    <arg name="gui" default ="true"/>
+    <arg name="headless" default ="false"/>
+    <arg name="debug" default ="false"/>
+    <arg name="robot_name" default = "panda"/>
+    <arg name="world_name" default="/home/ros/ur5/src/my_ur_gazebo/world/PBL.world"/>
+
+    <!-- We resume the logic in empy_world.launch, changing oly the name of the world to be launched -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="gui" value="$(arg gui)" />
+        <arg name="use_sim_time" value="$(arg use_sim_time)"/>
+        <arg name="debug" value="$(arg debug)" />
+        <arg name="paused" value="$(arg paused)"/>
+    </include>
+
+</launch>

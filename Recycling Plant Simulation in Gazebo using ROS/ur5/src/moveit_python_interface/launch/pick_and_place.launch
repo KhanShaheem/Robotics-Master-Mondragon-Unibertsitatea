@@ -1,0 +1,5 @@
+<launch>
+    <node name="pick_and_place" pkg="moveit_python_interface" type="pick_and_place.py" output="screen" cwd="node">
+    </node>
+</launch>
+

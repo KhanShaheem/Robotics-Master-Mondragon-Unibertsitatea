@@ -1,0 +1,4 @@
+<launch>
+    <node name="ros_bridge_server" pkg="web_tool" type="rosbridge_websocket.bash" output="screen" cwd="node" >
+    </node>
+</launch>

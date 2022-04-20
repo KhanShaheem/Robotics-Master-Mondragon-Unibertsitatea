@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="ur5" >
+
+  <link name="world" />
+  
+  <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
+
+  <!-- common stuff -->
+  <xacro:include filename="$(find my_ur_description)/urdf/common.gazebo.xacro" />
+
+  <!-- ur5 -->
+  <xacro:include filename="$(find my_ur_description)/urdf/ur5.urdf.xacro" />
+
+  <!-- arm -->
+  <xacro:ur5_robot prefix="" joint_limited="false" transmission_hw_interface="$(arg transmission_hw_interface)"/>
+
+
+  <!-- Robot1 Pedestal -->
+  <xacro:include filename="$(find hrwros_support)/urdf/robot_pedestal/robot_pedestal.urdf.xacro"/>
+  <xacro:robot_pedestal_urdf pedestal_prefix="" pedestal_parent="world" pedestal_height="1">
+    <origin xyz="0 -0.35 0" rpy="0 0 0"/>
+  </xacro:robot_pedestal_urdf>
+
+  <!-- robot1 to pedestal. -->
+  <joint name="robot1_to_pedestal" type="fixed">
+    <origin xyz="0 0 1.01" rpy="0 0 -90" />
+    <parent link="pedestal_link" />
+    <child link="base_link" />
+  </joint>
+
+  <!-- Table Pedestal 
+  <xacro:include filename="$(find hrwros_support)/urdf/robot_pedestal/robot_pedestal.urdf.xacro"/>
+  <xacro:robot_pedestal_urdf pedestal_prefix="table_" pedestal_parent="pedestal_link" pedestal_height="0.5">
+    <origin xyz="0.7 0.0 0.0" rpy="0 0 0"/>
+  </xacro:robot_pedestal_urdf>-->
+
+</robot>
